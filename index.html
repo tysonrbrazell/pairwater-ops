@@ -1,4 +1,1474 @@
 <!DOCTYPE html>
-<html><head><title>Pair Water Ops — Loading</title>
-<meta http-equiv="refresh" content="0; url=dashboard.html">
-</head><body>Loading...</body></html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pair Water — Ops Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ── Reset & Base ──────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #070e1a;
+    --navy-mid: #0d1929;
+    --navy-light: #132035;
+    --navy-border: #1e3052;
+    --gold: #c9a96e;
+    --gold-light: #e0c898;
+    --gold-dim: #8a7148;
+    --white: #ffffff;
+    --gray: #8fa0b8;
+    --gray-light: #c0cedd;
+    --sidebar-w: 220px;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--navy);
+    color: var(--white);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Sidebar ───────────────────────────────────────────── */
+  #sidebar {
+    position: fixed;
+    top: 0; left: 0;
+    width: var(--sidebar-w);
+    height: 100vh;
+    background: var(--navy-mid);
+    border-right: 1px solid var(--navy-border);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+    transition: transform 0.3s ease;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .sidebar-logo .wordmark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--gold);
+    text-transform: uppercase;
+  }
+  .sidebar-logo .tagline {
+    font-size: 10px;
+    color: var(--gray);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .sidebar-logo .ops-badge {
+    display: inline-block;
+    background: var(--navy-light);
+    border: 1px solid var(--navy-border);
+    color: var(--gray);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 3px;
+    margin-top: 8px;
+  }
+
+  nav { padding: 20px 12px; flex: 1; }
+  nav .nav-label {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    padding: 0 12px;
+    margin-bottom: 8px;
+    margin-top: 16px;
+  }
+  nav .nav-label:first-child { margin-top: 0; }
+
+  nav a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    color: var(--gray-light);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 400;
+    transition: all 0.2s;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  nav a:hover, nav a.active {
+    background: var(--navy-light);
+    border-color: var(--navy-border);
+    color: var(--white);
+  }
+  nav a.active { color: var(--gold); }
+  nav a .nav-icon { font-size: 15px; width: 18px; text-align: center; flex-shrink: 0; }
+
+  .sidebar-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--navy-border);
+    font-size: 11px;
+    color: var(--gold-dim);
+  }
+  .sidebar-footer .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: #3ecf8e;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+
+  /* ── Mobile toggle ─────────────────────────────────────── */
+  #menu-toggle {
+    display: none;
+    position: fixed;
+    top: 14px; left: 14px;
+    z-index: 200;
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    color: var(--gold);
+    width: 38px; height: 38px;
+    border-radius: var(--radius-sm);
+    font-size: 18px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+  }
+  #overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(7,14,26,0.7);
+    z-index: 99;
+  }
+
+  /* ── Main Content ──────────────────────────────────────── */
+  #main {
+    margin-left: var(--sidebar-w);
+    min-height: 100vh;
+  }
+
+  section {
+    padding: 60px 48px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  section:last-child { border-bottom: none; }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 36px;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px;
+    font-weight: 500;
+    color: var(--white);
+    letter-spacing: 0.03em;
+  }
+  .section-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    color: var(--gold-dim);
+    letter-spacing: 0.08em;
+  }
+
+  .subsection-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    margin-bottom: 18px;
+    margin-top: 40px;
+  }
+  .subsection-title:first-of-type { margin-top: 0; }
+
+  /* ── Cards ─────────────────────────────────────────────── */
+  .card {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 24px;
+  }
+  .card-sm { padding: 16px 20px; }
+
+  /* ── Bottle Design Cards ───────────────────────────────── */
+  .bottle-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .bottle-card {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 0;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+    position: relative;
+  }
+  .bottle-card:hover { transform: translateY(-2px); }
+  .bottle-card.selected {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 1px var(--gold-dim), 0 8px 32px rgba(201,169,110,0.12);
+  }
+
+  .bottle-visual {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .bottle-visual.wine-label {
+    background: linear-gradient(160deg, #f5f0e8 0%, #e8dfc8 100%);
+  }
+  .bottle-visual.apothecary {
+    background: linear-gradient(160deg, #070e1a 0%, #0d1929 100%);
+  }
+  .bottle-visual.editorial {
+    background: linear-gradient(160deg, #1a2d4a 0%, #0d1929 100%);
+  }
+
+  /* Bottle SVG sketches */
+  .bottle-svg { width: 60px; }
+
+  .bottle-card-body { padding: 20px; }
+  .bottle-concept-num {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 4px;
+  }
+  .bottle-concept-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+  .bottle-desc {
+    font-size: 12px;
+    color: var(--gray);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.04em;
+  }
+  .badge-unselected {
+    background: var(--navy-light);
+    color: var(--gray);
+    border: 1px solid var(--navy-border);
+  }
+  .badge-selected {
+    background: rgba(201,169,110,0.15);
+    color: var(--gold);
+    border: 1px solid var(--gold-dim);
+  }
+
+  /* ── Label Spec Card ───────────────────────────────────── */
+  .spec-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 16px;
+  }
+  .spec-item { display: flex; flex-direction: column; gap: 3px; }
+  .spec-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .spec-value {
+    font-size: 13px;
+    color: var(--white);
+    font-weight: 500;
+  }
+  .spec-sub { font-size: 11px; color: var(--gray); }
+
+  /* ── Website Card ──────────────────────────────────────── */
+  .website-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .website-info { display: flex; flex-direction: column; gap: 4px; }
+  .website-url {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    color: var(--white);
+  }
+  .website-status {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: var(--gray);
+  }
+  .live-dot {
+    width: 7px; height: 7px;
+    background: #3ecf8e; border-radius: 50%;
+    box-shadow: 0 0 6px #3ecf8e;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 20px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s;
+    border: none;
+    font-family: 'Inter', sans-serif;
+    white-space: nowrap;
+  }
+  .btn-gold {
+    background: var(--gold);
+    color: var(--navy);
+  }
+  .btn-gold:hover { background: var(--gold-light); }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--navy-border);
+    color: var(--gray-light);
+  }
+  .btn-outline:hover {
+    border-color: var(--gold-dim);
+    color: var(--gold);
+  }
+
+  /* ── Kanban ────────────────────────────────────────────── */
+  .kanban-board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    align-items: start;
+  }
+
+  .kanban-col {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 16px;
+    min-height: 120px;
+  }
+  .kanban-col.drag-over {
+    border-color: var(--gold-dim);
+    background: rgba(201,169,110,0.05);
+  }
+
+  .kanban-col-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--navy-border);
+  }
+  .kanban-col-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+  .kanban-col-title.backlog { color: #8fa0b8; }
+  .kanban-col-title.in-progress { color: #f0a500; }
+  .kanban-col-title.review { color: #6eb5ff; }
+  .kanban-col-title.done { color: #3ecf8e; }
+  .kanban-count {
+    font-size: 11px;
+    background: var(--navy-light);
+    border: 1px solid var(--navy-border);
+    color: var(--gray);
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600;
+  }
+
+  .kanban-card {
+    background: var(--navy-light);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    cursor: grab;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .kanban-card:last-child { margin-bottom: 0; }
+  .kanban-card:hover {
+    border-color: var(--navy-border);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    transform: translateY(-1px);
+  }
+  .kanban-card.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+  }
+  .kanban-card-title {
+    font-size: 12.5px;
+    color: var(--white);
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+  .kanban-card-title .priority-icon { color: #f0a500; }
+  .kanban-card-meta {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .kanban-tag {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .tag-ops { background: rgba(110,181,255,0.15); color: #6eb5ff; }
+  .tag-sales { background: rgba(201,169,110,0.15); color: var(--gold); }
+  .tag-marketing { background: rgba(62,207,142,0.15); color: #3ecf8e; }
+  .tag-legal { background: rgba(255,100,100,0.15); color: #ff8888; }
+  .tag-brand { background: rgba(200,100,255,0.15); color: #c864ff; }
+
+  .kanban-done .kanban-card-title { color: var(--gray); text-decoration: line-through; text-decoration-color: var(--navy-border); }
+  .kanban-done .kanban-card:hover .kanban-card-title { color: var(--gray-light); }
+
+  /* ── Tables ────────────────────────────────────────────── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--navy-border);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead tr {
+    background: var(--navy-light);
+    border-bottom: 1px solid var(--navy-border);
+  }
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(30,48,82,0.6);
+    color: var(--gray-light);
+    vertical-align: middle;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr { background: var(--navy-mid); transition: background 0.15s; }
+  tbody tr:hover { background: var(--navy-light); }
+  tbody tr.total-row td {
+    color: var(--gold);
+    font-weight: 600;
+    background: rgba(201,169,110,0.07);
+    border-top: 1px solid var(--gold-dim);
+  }
+
+  /* ── Unit Economics ────────────────────────────────────── */
+  .econ-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+  }
+  .econ-card {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .econ-card.highlight {
+    border-color: var(--gold-dim);
+    background: rgba(201,169,110,0.07);
+  }
+  .econ-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+    margin-bottom: 8px;
+  }
+  .econ-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--white);
+    line-height: 1;
+  }
+  .econ-card.highlight .econ-value { color: var(--gold); }
+  .econ-sub { font-size: 11px; color: var(--gray); margin-top: 4px; }
+
+  /* ── 5-Year Model ──────────────────────────────────────── */
+  .model-inputs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+  .input-group { display: flex; flex-direction: column; gap: 6px; }
+  .input-label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-dim);
+  }
+  .model-input {
+    background: var(--navy-light);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius-sm);
+    color: var(--white);
+    padding: 8px 12px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+  .model-input:focus {
+    outline: none;
+    border-color: var(--gold-dim);
+  }
+
+  .projection-table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius);
+    border: 1px solid var(--navy-border);
+    margin-bottom: 24px;
+  }
+
+  .proj-table th, .proj-table td { padding: 11px 14px; font-size: 12px; }
+  .proj-table .year-col { color: var(--gold); font-weight: 600; }
+  .proj-table .positive { color: #3ecf8e; }
+
+  /* ── Revenue Milestones ────────────────────────────────── */
+  .milestone-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .ms-card {
+    background: var(--navy-mid);
+    border: 1px solid var(--navy-border);
+    border-radius: var(--radius);
+    padding: 16px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .ms-card.reached { border-color: var(--gold-dim); }
+  .ms-card.reached .ms-amount { color: var(--gold); }
+  .ms-amount {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--gray);
+    margin-bottom: 4px;
+  }
+  .ms-year {
+    font-size: 11px;
+    color: var(--gray);
+  }
+  .ms-year.reached-txt { color: #3ecf8e; }
+  .ms-year.future-txt { color: var(--gray); }
+
+  /* ── Divider ───────────────────────────────────────────── */
+  .divider {
+    height: 1px;
+    background: var(--navy-border);
+    margin: 32px 0;
+  }
+
+  /* ── Scrollbar ─────────────────────────────────────────── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--navy); }
+  ::-webkit-scrollbar-thumb { background: var(--navy-border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
+
+  /* ── Responsive ────────────────────────────────────────── */
+  @media (max-width: 900px) {
+    #menu-toggle { display: flex; }
+    #sidebar { transform: translateX(-100%); }
+    #sidebar.open { transform: translateX(0); }
+    #overlay.active { display: block; }
+    #main { margin-left: 0; }
+    section { padding: 50px 20px 40px; }
+    .bottle-grid { grid-template-columns: 1fr; }
+    .kanban-board { grid-template-columns: 1fr 1fr; }
+    .econ-grid { grid-template-columns: repeat(2, 1fr); }
+    .model-inputs { grid-template-columns: repeat(2, 1fr); }
+    .milestone-grid { grid-template-columns: repeat(2, 1fr); }
+    .spec-grid { grid-template-columns: 1fr; }
+    .website-card { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 560px) {
+    .kanban-board { grid-template-columns: 1fr; }
+    .econ-grid { grid-template-columns: 1fr; }
+    .model-inputs { grid-template-columns: 1fr; }
+    .milestone-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── Mobile Toggle ──────────────────────────────────────── -->
+<button id="menu-toggle" onclick="toggleSidebar()" aria-label="Menu">☰</button>
+<div id="overlay" onclick="closeSidebar()"></div>
+
+<!-- ── Sidebar ───────────────────────────────────────────── -->
+<aside id="sidebar">
+  <div class="sidebar-logo">
+    <div class="wordmark">Pair Water</div>
+    <div class="tagline">Custom Waters · Fine Minerality</div>
+    <div class="ops-badge">Ops Dashboard</div>
+  </div>
+
+  <nav>
+    <div class="nav-label">Sections</div>
+    <a href="#product" class="active nav-link" data-section="product">
+      <span class="nav-icon">🍾</span> Product
+    </a>
+    <a href="#tracking" class="nav-link" data-section="tracking">
+      <span class="nav-icon">📋</span> Project Tracking
+    </a>
+    <a href="#financials" class="nav-link" data-section="financials">
+      <span class="nav-icon">💰</span> Financials
+    </a>
+
+    <div class="nav-label" style="margin-top:24px;">Quick Links</div>
+    <a href="https://pairwater.com" target="_blank">
+      <span class="nav-icon">🌐</span> pairwater.com
+    </a>
+    <a href="https://ops.pairwater.com/model.html" target="_blank">
+      <span class="nav-icon">📊</span> Revenue Model
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span class="dot"></span>ops.pairwater.com
+  </div>
+</aside>
+
+<!-- ── Main Content ──────────────────────────────────────── -->
+<main id="main">
+
+  <!-- ════════════════════════════════════════════════
+       SECTION 1 — PRODUCT
+  ═════════════════════════════════════════════════ -->
+  <section id="product">
+    <div class="section-header">
+      <span class="section-num">01 /</span>
+      <h1 class="section-title">Product</h1>
+    </div>
+
+    <!-- Bottle Designs -->
+    <div class="subsection-title">Bottle Concepts</div>
+    <div class="bottle-grid">
+
+      <!-- Concept 1 -->
+      <div class="bottle-card">
+        <div class="bottle-visual wine-label">
+          <svg class="bottle-svg" viewBox="0 0 60 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 12 C24 12 20 20 18 30 C16 40 15 50 15 65 L15 120 C15 125 18 128 30 128 C42 128 45 125 45 120 L45 65 C45 50 44 40 42 30 C40 20 36 12 36 12 Z" fill="#2a1f0e" opacity="0.9"/>
+            <rect x="18" y="55" width="24" height="40" rx="2" fill="#f5f0e0"/>
+            <rect x="19" y="56" width="22" height="38" rx="1" fill="none" stroke="#c9a96e" stroke-width="1.2"/>
+            <line x1="20" y1="62" x2="40" y2="62" stroke="#c9a96e" stroke-width="0.8"/>
+            <line x1="20" y1="88" x2="40" y2="88" stroke="#c9a96e" stroke-width="0.8"/>
+            <text x="29" y="78" font-size="5" fill="#2a1a0e" text-anchor="middle" font-family="serif">PAIR</text>
+            <rect x="24" y="8" width="12" height="8" rx="1" fill="#555"/>
+          </svg>
+        </div>
+        <div class="bottle-card-body">
+          <div class="bottle-concept-num">Concept 01</div>
+          <div class="bottle-concept-name">"The Wine Label"</div>
+          <div class="bottle-desc">Cream/ivory label with gold foil border. Classic Burgundy-style bottle silhouette. Traditional fine-wine aesthetic.</div>
+          <span class="status-badge badge-unselected">Not Selected</span>
+        </div>
+      </div>
+
+      <!-- Concept 2 -->
+      <div class="bottle-card">
+        <div class="bottle-visual apothecary">
+          <svg class="bottle-svg" viewBox="0 0 60 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 12 C24 12 20 20 18 30 C16 40 15 50 15 65 L15 120 C15 125 18 128 30 128 C42 128 45 125 45 120 L45 65 C45 50 44 40 42 30 C40 20 36 12 36 12 Z" fill="#0a1828"/>
+            <rect x="17" y="50" width="26" height="48" rx="2" fill="#070e1a"/>
+            <rect x="18" y="51" width="24" height="46" rx="1" fill="none" stroke="#c9a96e" stroke-width="1"/>
+            <text x="29" y="63" font-size="4" fill="#c9a96e" text-anchor="middle" font-family="monospace">Ca²⁺ Mg²⁺</text>
+            <text x="29" y="72" font-size="3.5" fill="#8a7148" text-anchor="middle" font-family="monospace">Na⁺ K⁺ HCO₃⁻</text>
+            <text x="29" y="82" font-size="5" fill="#c9a96e" text-anchor="middle" font-family="serif" font-weight="bold">PAIR</text>
+            <text x="29" y="90" font-size="3.5" fill="#8a7148" text-anchor="middle" font-family="monospace">SO₄²⁻ Cl⁻</text>
+            <rect x="24" y="8" width="12" height="8" rx="1" fill="#c9a96e" opacity="0.4"/>
+          </svg>
+        </div>
+        <div class="bottle-card-body">
+          <div class="bottle-concept-num">Concept 02</div>
+          <div class="bottle-concept-name">"The Apothecary"</div>
+          <div class="bottle-desc">Dark navy label with mineral formulas as design elements. Scientific, alchemical feel. Mineral-forward branding.</div>
+          <span class="status-badge badge-unselected">Not Selected</span>
+        </div>
+      </div>
+
+      <!-- Concept 3 — SELECTED -->
+      <div class="bottle-card selected">
+        <div class="bottle-visual editorial">
+          <svg class="bottle-svg" viewBox="0 0 60 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M24 12 C24 12 20 20 18 30 C16 40 15 50 15 65 L15 120 C15 125 18 128 30 128 C42 128 45 125 45 120 L45 65 C45 50 44 40 42 30 C40 20 36 12 36 12 Z" fill="#1a3a2a"/>
+            <rect x="17" y="52" width="26" height="44" rx="1" fill="white"/>
+            <text x="29" y="68" font-size="7" fill="#070e1a" text-anchor="middle" font-family="serif" font-weight="bold">PAIR</text>
+            <line x1="19" y1="72" x2="41" y2="72" stroke="#c9a96e" stroke-width="0.8"/>
+            <text x="29" y="80" font-size="3.5" fill="#555" text-anchor="middle" font-family="sans-serif">custom water</text>
+            <text x="29" y="88" font-size="3" fill="#888" text-anchor="middle" font-family="sans-serif" font-style="italic">"curated for you"</text>
+            <rect x="24" y="8" width="12" height="8" rx="1" fill="#1a1a1a"/>
+          </svg>
+        </div>
+        <div class="bottle-card-body">
+          <div class="bottle-concept-num">Concept 03 ⭐</div>
+          <div class="bottle-concept-name">"The Modern Editorial"</div>
+          <div class="bottle-desc">Clean white label. Bold PAIR branding. The couple's story quote printed directly on the label. Matte black shrink capsule. Dark green 750ml Burgundy-style glass bottle.</div>
+          <span class="status-badge badge-selected">✓ Selected</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Label Specs -->
+    <div class="subsection-title">Label Specs — Modern Editorial</div>
+    <div class="card">
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:16px;">
+        <span style="font-size:12px; color:var(--gray);">Selected design · Production ready</span>
+        <span class="status-badge badge-selected" style="margin-left:auto;">✓ Labels Ordered</span>
+      </div>
+      <div class="spec-grid">
+        <div class="spec-item">
+          <span class="spec-label">Front Label</span>
+          <span class="spec-value">3.5" × 5"</span>
+          <span class="spec-sub">White Matte BOPP Inkjet — OL5100WJ</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Back Label</span>
+          <span class="spec-value">4" × 3.25"</span>
+          <span class="spec-sub">White Matte BOPP Inkjet — OL525WJ</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Printer</span>
+          <span class="spec-value">Epson EcoTank ET-8550</span>
+          <span class="spec-sub">Wide-format inkjet, 8.5" max width</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Capsule</span>
+          <span class="spec-value">Matte Black Shrink Capsule</span>
+          <span class="spec-sub">Heat-shrink, PVC</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Cork</span>
+          <span class="spec-value">Natural #9 — 24×45mm</span>
+          <span class="spec-sub">Standard wine cork, floor corker</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-label">Bottle</span>
+          <span class="spec-value">750ml Burgundy-Style</span>
+          <span class="spec-sub">Dark green glass</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Website -->
+    <div class="subsection-title">Website</div>
+    <div class="card">
+      <div class="website-card">
+        <div class="website-info">
+          <div style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:4px;">Live Site</div>
+          <div class="website-url">pairwater.com</div>
+          <div class="website-status">
+            <span class="live-dot"></span>
+            Live &amp; active
+          </div>
+        </div>
+        <a href="https://pairwater.com" target="_blank" class="btn btn-gold">
+          View Live Site →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       SECTION 2 — PROJECT TRACKING
+  ═════════════════════════════════════════════════ -->
+  <section id="tracking">
+    <div class="section-header">
+      <span class="section-num">02 /</span>
+      <h1 class="section-title">Project Tracking</h1>
+    </div>
+
+    <!-- Kanban -->
+    <div class="subsection-title">Kanban Board</div>
+    <div class="kanban-board" id="kanban">
+
+      <!-- Backlog -->
+      <div class="kanban-col" data-col="backlog" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragleave="onDragLeave(event)">
+        <div class="kanban-col-header">
+          <span class="kanban-col-title backlog">Backlog</span>
+          <span class="kanban-count" id="count-backlog">7</span>
+        </div>
+        <div class="kanban-cards" id="cards-backlog">
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Define pricing tiers</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-ops">ops</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title"><span class="priority-icon">⚡</span> Brand deck / one-pager</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-sales">sales</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Tasting kit design</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-sales">sales</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Product photography</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-marketing">marketing</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Legal &amp; licensing</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-legal">legal</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Instagram presence</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-marketing">marketing</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Testimonial strategy</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-marketing">marketing</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- In Progress -->
+      <div class="kanban-col" data-col="inprogress" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragleave="onDragLeave(event)">
+        <div class="kanban-col-header">
+          <span class="kanban-col-title in-progress">In Progress</span>
+          <span class="kanban-count" id="count-inprogress">0</span>
+        </div>
+        <div class="kanban-cards" id="cards-inprogress" style="min-height:60px;">
+          <div style="text-align:center; padding:20px 0; color:var(--navy-border); font-size:12px; font-style:italic;">Drop cards here</div>
+        </div>
+      </div>
+
+      <!-- Review -->
+      <div class="kanban-col" data-col="review" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragleave="onDragLeave(event)">
+        <div class="kanban-col-header">
+          <span class="kanban-col-title review">Review</span>
+          <span class="kanban-count" id="count-review">4</span>
+        </div>
+        <div class="kanban-cards" id="cards-review">
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Target list of 100 wedding planners</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-sales">sales</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Outreach strategy + A/B framework</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-sales">sales</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Tracking spreadsheet template</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-sales">sales</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Top 20 planner research + hooks</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-sales">sales</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Done -->
+      <div class="kanban-col kanban-done" data-col="done" ondragover="onDragOver(event)" ondrop="onDrop(event)" ondragleave="onDragLeave(event)">
+        <div class="kanban-col-header">
+          <span class="kanban-col-title done">Done</span>
+          <span class="kanban-count" id="count-done">10</span>
+        </div>
+        <div class="kanban-cards" id="cards-done">
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Equipment ordered (250gal tank + minerals)</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-ops">ops</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Customization formula developed</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-ops">ops</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Water sommelier certification</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-ops">ops</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Target market identified</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-sales">sales</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Tide AI assistant setup</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-ops">ops</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Telegram connected</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-ops">ops</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">pairwater.com live</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-ops">ops</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Bottle &amp; label design selected (Modern Editorial)</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-brand">brand</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">Labels ordered (OL5100WJ + OL525WJ)</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-ops">ops</span></div>
+          </div>
+          <div class="kanban-card" draggable="true" ondragstart="onDragStart(event)">
+            <div class="kanban-card-title">3 outreach emails sent (Mar 13)</div>
+            <div class="kanban-card-meta"><span class="kanban-tag tag-sales">sales</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Outreach Pipeline -->
+    <div class="subsection-title">Outreach Pipeline</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Planner</th>
+            <th>Email</th>
+            <th>Sent</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--white); font-weight:500;">Jove Meyer Events</td>
+            <td><a href="mailto:hello@jovemeyer.com" style="color:var(--gold); text-decoration:none;">hello@jovemeyer.com</a></td>
+            <td>Mar 13</td>
+            <td><span style="color:#6eb5ff;">📤 Sent</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--white); font-weight:500;">Daughter of Design</td>
+            <td><a href="mailto:info@daughterofdesign.com" style="color:var(--gold); text-decoration:none;">info@daughterofdesign.com</a></td>
+            <td>Mar 13</td>
+            <td><span style="color:#6eb5ff;">📤 Sent</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--white); font-weight:500;">Calder Clark</td>
+            <td><a href="mailto:hello@calderclark.com" style="color:var(--gold); text-decoration:none;">hello@calderclark.com</a></td>
+            <td>Mar 13</td>
+            <td><span style="color:#6eb5ff;">📤 Sent</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Milestones -->
+    <div class="subsection-title">Milestones</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Milestone</th>
+            <th>Target</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--white);">100 planner target list complete</td>
+            <td>Mar 13</td>
+            <td><span style="color:#3ecf8e;">✅ Done</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">Outreach templates finalized</td>
+            <td>Mar 14</td>
+            <td><span style="color:#3ecf8e;">✅ Done</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">First outreach batch sent</td>
+            <td>Mar 13</td>
+            <td><span style="color:#3ecf8e;">✅ Done</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">Follow-up if no replies</td>
+            <td>Mar 17</td>
+            <td><span style="color:#f0a500;">⏳ Scheduled</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">First meeting booked</td>
+            <td>Mar 31</td>
+            <td><span style="color:var(--gray);">⏳ Waiting</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">First client closed</td>
+            <td>Apr 15</td>
+            <td><span style="color:var(--gray);">⏳ Waiting</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">Bottle supplier quotes received</td>
+            <td>TBD</td>
+            <td><span style="color:#6eb5ff;">🔄 Pending</span></td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">First 500 bottles ordered</td>
+            <td>TBD</td>
+            <td><span style="color:var(--gray);">⏳ Waiting</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════
+       SECTION 3 — FINANCIALS
+  ═════════════════════════════════════════════════ -->
+  <section id="financials">
+    <div class="section-header">
+      <span class="section-num">03 /</span>
+      <h1 class="section-title">Financials</h1>
+    </div>
+
+    <!-- Budget — Spent -->
+    <div class="subsection-title">Budget Tracker — Spent</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Item</th>
+            <th>Category</th>
+            <th style="text-align:right;">Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Pre-launch</td>
+            <td style="color:var(--white);">Hostinger VPS (annual)</td>
+            <td><span class="kanban-tag tag-ops">Infrastructure</span></td>
+            <td style="text-align:right; font-variant-numeric: tabular-nums;">$185.73</td>
+          </tr>
+          <tr>
+            <td>Pre-launch</td>
+            <td style="color:var(--white);">275 Gallon IBC Tote (incl. shipping)</td>
+            <td><span class="kanban-tag tag-ops">Equipment</span></td>
+            <td style="text-align:right; font-variant-numeric: tabular-nums;">$670.95</td>
+          </tr>
+          <tr>
+            <td>Pre-launch</td>
+            <td style="color:var(--white);">Electric IBC Tote Mixer</td>
+            <td><span class="kanban-tag tag-ops">Equipment</span></td>
+            <td style="text-align:right; font-variant-numeric: tabular-nums;">$920.00</td>
+          </tr>
+          <tr>
+            <td>Feb 25</td>
+            <td style="color:var(--white);">Water Filters + Hose (Amazon)</td>
+            <td><span class="kanban-tag tag-ops">Equipment</span></td>
+            <td style="text-align:right; font-variant-numeric: tabular-nums;">$73.48</td>
+          </tr>
+          <tr>
+            <td>Mar 13</td>
+            <td style="color:var(--white);">Labels (OL5100WJ ×100 + OL525WJ ×100)</td>
+            <td><span class="kanban-tag tag-marketing">Packaging</span></td>
+            <td style="text-align:right; font-variant-numeric: tabular-nums;">$172.17</td>
+          </tr>
+          <tr class="total-row">
+            <td colspan="3" style="font-weight:700; letter-spacing:0.06em;">TOTAL SPENT</td>
+            <td style="text-align:right; font-size:15px;">$2,022.33</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Budget — Pending -->
+    <div class="subsection-title">Budget Tracker — Pending</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Category</th>
+            <th style="text-align:right;">Est. Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--white);">500× 750ml Burgundy glass bottles</td>
+            <td><span class="kanban-tag tag-marketing">Packaging</span></td>
+            <td style="text-align:right; color:var(--gold);">$750–1,750</td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">Natural corks + capsules</td>
+            <td><span class="kanban-tag tag-marketing">Packaging</span></td>
+            <td style="text-align:right; color:var(--gold);">$125–275</td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">Ferrari floor corker</td>
+            <td><span class="kanban-tag tag-ops">Equipment</span></td>
+            <td style="text-align:right; color:var(--gold);">$90–100</td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">Bottle filler + heat gun</td>
+            <td><span class="kanban-tag tag-ops">Equipment</span></td>
+            <td style="text-align:right; color:var(--gold);">$45–75</td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">Epson EcoTank ET-8550</td>
+            <td><span class="kanban-tag tag-ops">Equipment</span></td>
+            <td style="text-align:right; color:var(--gold);">$350</td>
+          </tr>
+          <tr>
+            <td style="color:var(--white);">Domain + email (annual)</td>
+            <td><span class="kanban-tag tag-ops">Infrastructure</span></td>
+            <td style="text-align:right; color:var(--gold);">$50</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Unit Economics -->
+    <div class="subsection-title">Unit Economics</div>
+    <div class="econ-grid">
+      <div class="econ-card">
+        <div class="econ-label">COGS / Bottle</div>
+        <div class="econ-value">$4.55</div>
+      </div>
+      <div class="econ-card">
+        <div class="econ-label">Price / Bottle</div>
+        <div class="econ-value">$30.00</div>
+      </div>
+      <div class="econ-card highlight">
+        <div class="econ-label">Gross Margin</div>
+        <div class="econ-value">85%</div>
+        <div class="econ-sub">$25.45 / bottle</div>
+      </div>
+      <div class="econ-card">
+        <div class="econ-label">Revenue / Event</div>
+        <div class="econ-value">$15K</div>
+        <div class="econ-sub">500 bottles</div>
+      </div>
+      <div class="econ-card highlight">
+        <div class="econ-label">Gross Profit / Event</div>
+        <div class="econ-value">$12,725</div>
+      </div>
+    </div>
+
+    <!-- 5-Year Projection -->
+    <div class="subsection-title">5-Year Revenue Projection</div>
+
+    <div class="card" style="margin-bottom:24px;">
+      <div style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--gold-dim); margin-bottom:16px;">Model Assumptions — Edit to Recalculate</div>
+      <div class="model-inputs">
+        <div class="input-group">
+          <label class="input-label">Total Planners (US)</label>
+          <input type="number" class="model-input" id="inp-planners" value="5000" oninput="recalcProjection()">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Events / Planner / Year</label>
+          <input type="number" class="model-input" id="inp-events" value="20" oninput="recalcProjection()">
+        </div>
+        <div class="input-group">
+          <label class="input-label">% Events Using Pair</label>
+          <input type="number" class="model-input" id="inp-pct" value="25" step="0.1" oninput="recalcProjection()">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Price / Bottle ($)</label>
+          <input type="number" class="model-input" id="inp-price" value="30" step="0.01" oninput="recalcProjection()">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Bottles / Event</label>
+          <input type="number" class="model-input" id="inp-bpe" value="500" oninput="recalcProjection()">
+        </div>
+        <div class="input-group">
+          <label class="input-label">COGS / Bottle ($)</label>
+          <input type="number" class="model-input" id="inp-cogs" value="4.55" step="0.01" oninput="recalcProjection()">
+        </div>
+        <div class="input-group">
+          <label class="input-label">Annual Fixed Costs ($)</label>
+          <input type="number" class="model-input" id="inp-fixed" value="1485" oninput="recalcProjection()">
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:4px;">
+        <div>
+          <div class="input-label" style="margin-bottom:4px;">2026 Penetration %</div>
+          <input type="number" class="model-input" id="pen-2026" value="0.1" step="0.01" oninput="recalcProjection()">
+        </div>
+        <div>
+          <div class="input-label" style="margin-bottom:4px;">2027</div>
+          <input type="number" class="model-input" id="pen-2027" value="0.5" step="0.01" oninput="recalcProjection()">
+        </div>
+        <div>
+          <div class="input-label" style="margin-bottom:4px;">2028</div>
+          <input type="number" class="model-input" id="pen-2028" value="2" step="0.01" oninput="recalcProjection()">
+        </div>
+        <div>
+          <div class="input-label" style="margin-bottom:4px;">2029</div>
+          <input type="number" class="model-input" id="pen-2029" value="5" step="0.01" oninput="recalcProjection()">
+        </div>
+        <div>
+          <div class="input-label" style="margin-bottom:4px;">2030</div>
+          <input type="number" class="model-input" id="pen-2030" value="10" step="0.01" oninput="recalcProjection()">
+        </div>
+      </div>
+    </div>
+
+    <div class="projection-table-wrap">
+      <table class="proj-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Planners</th>
+            <th>Events</th>
+            <th>Bottles</th>
+            <th>Revenue</th>
+            <th>COGS</th>
+            <th>Gross Profit</th>
+            <th>GM%</th>
+            <th>Net Profit</th>
+            <th>Cumulative Rev</th>
+          </tr>
+        </thead>
+        <tbody id="proj-body">
+          <!-- Filled by JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Revenue Milestones -->
+    <div class="subsection-title">Revenue Milestones</div>
+    <div class="milestone-grid" id="ms-grid">
+      <!-- Filled by JS -->
+    </div>
+
+    <div style="display:flex; justify-content:center; margin-top:8px;">
+      <a href="https://ops.pairwater.com/model.html" target="_blank" class="btn btn-gold" style="font-size:14px; padding:12px 28px;">
+        Open Full Interactive Model →
+      </a>
+    </div>
+  </section>
+
+</main>
+
+<script>
+// ── Sidebar ──────────────────────────────────────────────
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('active');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+// ── Active nav on scroll ──────────────────────────────────
+const sections = ['product','tracking','financials'];
+const navLinks = document.querySelectorAll('.nav-link');
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`[data-section="${entry.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+
+sections.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) observer.observe(el);
+});
+
+// ── Kanban Drag & Drop ────────────────────────────────────
+let dragCard = null;
+let sourceCol = null;
+
+function onDragStart(e) {
+  dragCard = e.currentTarget;
+  sourceCol = dragCard.closest('.kanban-col');
+  setTimeout(() => dragCard.classList.add('dragging'), 0);
+}
+
+function onDragOver(e) {
+  e.preventDefault();
+  const col = e.currentTarget;
+  col.classList.add('drag-over');
+}
+
+function onDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function onDrop(e) {
+  e.preventDefault();
+  const col = e.currentTarget;
+  col.classList.remove('drag-over');
+  if (dragCard) {
+    const cardsContainer = col.querySelector('.kanban-cards');
+    // Remove placeholder if present
+    const placeholder = cardsContainer.querySelector('div[style]');
+    if (placeholder && placeholder.textContent.includes('Drop cards here')) {
+      placeholder.remove();
+    }
+    dragCard.classList.remove('dragging');
+    cardsContainer.appendChild(dragCard);
+    updateCounts();
+    // Toggle done styling
+    col.classList.toggle('kanban-done', col.dataset.col === 'done');
+  }
+  dragCard = null;
+}
+
+document.addEventListener('dragend', () => {
+  if (dragCard) dragCard.classList.remove('dragging');
+  document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+});
+
+function updateCounts() {
+  ['backlog','inprogress','review','done'].forEach(col => {
+    const container = document.getElementById(`cards-${col}`);
+    const cards = container.querySelectorAll('.kanban-card');
+    document.getElementById(`count-${col}`).textContent = cards.length;
+    // Add placeholder if empty
+    if (cards.length === 0 && !container.querySelector('div[style]')) {
+      const ph = document.createElement('div');
+      ph.style.cssText = 'text-align:center; padding:20px 0; color:var(--navy-border); font-size:12px; font-style:italic;';
+      ph.textContent = 'Drop cards here';
+      container.appendChild(ph);
+    }
+  });
+}
+
+// ── 5-Year Projection ─────────────────────────────────────
+function fmt(n, dec=0) {
+  if (Math.abs(n) >= 1e6) return '$' + (n/1e6).toFixed(dec || 2) + 'M';
+  if (Math.abs(n) >= 1e3) return '$' + (n/1e3).toFixed(dec || 1) + 'K';
+  return '$' + n.toFixed(dec || 0);
+}
+function fmtFull(n) {
+  return '$' + Math.round(n).toLocaleString();
+}
+function fmtNum(n) {
+  return Math.round(n).toLocaleString();
+}
+
+function recalcProjection() {
+  const totalPlanners = parseFloat(document.getElementById('inp-planners').value) || 5000;
+  const eventsPerPlanner = parseFloat(document.getElementById('inp-events').value) || 20;
+  const pctEvents = parseFloat(document.getElementById('inp-pct').value) || 25;
+  const price = parseFloat(document.getElementById('inp-price').value) || 30;
+  const bpe = parseFloat(document.getElementById('inp-bpe').value) || 500;
+  const cogs = parseFloat(document.getElementById('inp-cogs').value) || 4.55;
+  const fixed = parseFloat(document.getElementById('inp-fixed').value) || 1485;
+  const penetrations = [
+    parseFloat(document.getElementById('pen-2026').value) / 100,
+    parseFloat(document.getElementById('pen-2027').value) / 100,
+    parseFloat(document.getElementById('pen-2028').value) / 100,
+    parseFloat(document.getElementById('pen-2029').value) / 100,
+    parseFloat(document.getElementById('pen-2030').value) / 100,
+  ];
+  const years = [2026,2027,2028,2029,2030];
+  const addressableEvents = totalPlanners * eventsPerPlanner * (pctEvents/100);
+
+  let cumRev = 0;
+  let rows = '';
+  const yearlyData = [];
+
+  years.forEach((yr, i) => {
+    const pen = penetrations[i];
+    const planners = Math.round(totalPlanners * pen);
+    const events = Math.round(planners * eventsPerPlanner * (pctEvents/100));
+    const bottles = events * bpe;
+    const revenue = bottles * price;
+    const cogsTotal = bottles * cogs;
+    const grossProfit = revenue - cogsTotal;
+    const gm = revenue > 0 ? (grossProfit / revenue * 100) : 0;
+    const netProfit = grossProfit - fixed;
+    cumRev += revenue;
+    yearlyData.push({ yr, planners, events, bottles, revenue, cogsTotal, grossProfit, gm, netProfit, cumRev });
+
+    rows += `<tr>
+      <td class="year-col">${yr}</td>
+      <td>${fmtNum(planners)}</td>
+      <td>${fmtNum(events)}</td>
+      <td>${fmtNum(bottles)}</td>
+      <td style="color:var(--white);">${fmtFull(revenue)}</td>
+      <td style="color:#ff8888;">${fmtFull(cogsTotal)}</td>
+      <td class="positive">${fmtFull(grossProfit)}</td>
+      <td class="positive">${gm.toFixed(1)}%</td>
+      <td class="${netProfit >= 0 ? 'positive' : ''}" style="${netProfit < 0 ? 'color:#ff8888;' : ''}">${fmtFull(netProfit)}</td>
+      <td style="color:var(--gold); font-weight:600;">${fmtFull(cumRev)}</td>
+    </tr>`;
+  });
+
+  document.getElementById('proj-body').innerHTML = rows;
+
+  // Revenue milestones
+  const milestones = [100000, 500000, 1000000, 5000000, 10000000, 50000000, 100000000];
+  const labels = ['$100K','$500K','$1M','$5M','$10M','$50M','$100M'];
+  let msHtml = '';
+
+  milestones.forEach((ms, idx) => {
+    let reachedYear = null;
+    let runningSum = 0;
+    for (let d of yearlyData) {
+      runningSum += d.revenue;
+      if (runningSum >= ms && !reachedYear) {
+        reachedYear = d.yr;
+      }
+    }
+    const reached = reachedYear !== null;
+    msHtml += `<div class="ms-card ${reached ? 'reached' : ''}">
+      <div class="ms-amount">${labels[idx]}</div>
+      <div class="ms-year ${reached ? 'reached-txt' : 'future-txt'}">${reached ? '✓ ' + reachedYear : 'Not yet projected'}</div>
+    </div>`;
+  });
+
+  document.getElementById('ms-grid').innerHTML = msHtml;
+}
+
+// Init on load
+recalcProjection();
+</script>
+</body>
+</html>
