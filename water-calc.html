@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAIR Water — Mineral Calculator</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0a0a; color: #e8e4de; font-family: 'Inter', system-ui, sans-serif; font-size: 14px; min-height: 100vh; padding: 40px 20px; }
+  h1 { font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: #c9a96e; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 28px; font-weight: 300; letter-spacing: 0.05em; color: #f5f0e8; margin-bottom: 40px; }
+  .container { max-width: 1100px; margin: 0 auto; }
+  .section { background: #111; border: 1px solid #222; border-radius: 4px; padding: 28px; margin-bottom: 24px; }
+  .section-title { font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase; color: #c9a96e; margin-bottom: 20px; font-weight: 500; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #888; display: block; margin-bottom: 6px; }
+  input[type=number], select { background: #0a0a0a; border: 1px solid #2a2a2a; color: #e8e4de; padding: 10px 12px; width: 100%; border-radius: 3px; font-size: 14px; font-family: inherit; transition: border-color 0.2s; }
+  input[type=number]:focus, select:focus { outline: none; border-color: #c9a96e; }
+  .compound-card { background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 3px; padding: 16px; }
+  .compound-name { font-size: 12px; color: #ccc; margin-bottom: 4px; font-weight: 500; }
+  .compound-formula { font-size: 10px; color: #555; margin-bottom: 12px; font-family: monospace; }
+  .compound-ions { font-size: 10px; color: #c9a96e; margin-top: 8px; }
+  .mode-toggle { display: flex; gap: 0; margin-bottom: 24px; }
+  .mode-btn { padding: 10px 24px; border: 1px solid #333; background: transparent; color: #888; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+  .mode-btn:first-child { border-radius: 3px 0 0 3px; }
+  .mode-btn:last-child { border-radius: 0 3px 3px 0; border-left: none; }
+  .mode-btn.active { background: #c9a96e; border-color: #c9a96e; color: #0a0a0a; font-weight: 600; }
+  .profile-row { display: flex; align-items: center; gap: 16px; padding: 10px 0; border-bottom: 1px solid #1a1a1a; }
+  .profile-row:last-child { border-bottom: none; }
+  .profile-ion { width: 180px; font-size: 12px; color: #ccc; flex-shrink: 0; }
+  .profile-ion .label-tag { font-size: 9px; color: #c9a96e; letter-spacing: 0.1em; margin-left: 8px; }
+  .profile-val { width: 80px; text-align: right; font-size: 15px; font-weight: 300; flex-shrink: 0; }
+  .profile-val.match { color: #7cb87c; }
+  .profile-val.over { color: #e07c5a; }
+  .profile-bar-wrap { flex: 1; background: #1a1a1a; height: 4px; border-radius: 2px; overflow: hidden; }
+  .profile-bar { height: 100%; background: #c9a96e; border-radius: 2px; transition: width 0.4s ease; }
+  .profile-unit { width: 40px; font-size: 10px; color: #444; }
+  .tds-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 20px; padding-top: 20px; border-top: 1px solid #1e1e1e; }
+  .tds-item { text-align: center; }
+  .tds-val { font-size: 28px; font-weight: 200; color: #c9a96e; }
+  .tds-key { font-size: 10px; color: #555; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 4px; }
+  .recipe-card { background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 3px; padding: 24px; }
+  .recipe-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #888; margin-bottom: 16px; }
+  .recipe-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
+  .recipe-row:last-child { border-bottom: none; }
+  .recipe-compound { color: #ccc; }
+  .recipe-amount { color: #c9a96e; font-weight: 500; font-size: 15px; }
+  .recipe-grams { font-size: 11px; color: #555; }
+  .btn { padding: 12px 28px; background: #c9a96e; color: #0a0a0a; border: none; border-radius: 3px; font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; font-weight: 600; font-family: inherit; transition: opacity 0.2s; }
+  .btn:hover { opacity: 0.85; }
+  .btn-ghost { background: transparent; border: 1px solid #333; color: #888; }
+  .chart-wrap { position: relative; height: 280px; }
+  .batch-row { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+  .batch-row label { margin-bottom: 0; white-space: nowrap; }
+  .batch-input { width: 120px; }
+  .batch-convert { font-size: 12px; color: #555; }
+  .diff-tag { font-size: 10px; padding: 2px 6px; border-radius: 2px; margin-left: 8px; }
+  .diff-good { background: #1a2e1a; color: #7cb87c; }
+  .diff-over { background: #2e1a1a; color: #e07c5a; }
+  .diff-zero { background: #1a1a1a; color: #555; }
+  @media (max-width: 768px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="container">
+  <div style="margin-bottom: 48px;">
+    <h1>Pair Water</h1>
+    <h2>Mineral Recipe Calculator</h2>
+  </div>
+
+  <!-- Batch Size -->
+  <div class="section">
+    <div class="section-title">Batch Configuration</div>
+    <div class="batch-row">
+      <label>Batch Size</label>
+      <input type="number" id="batchGal" class="batch-input" value="250" min="1" step="1" oninput="updateBatch()">
+      <span style="font-size:13px; color:#555;">gallons</span>
+      <span class="batch-convert" id="batchL">= 946 L</span>
+    </div>
+    <div class="mode-toggle">
+      <button class="mode-btn active" id="btn-forward" onclick="setMode('forward')">Forward — Grams → Profile</button>
+      <button class="mode-btn" id="btn-target" onclick="setMode('target')">Target — Profile → Grams</button>
+    </div>
+  </div>
+
+  <!-- Compounds (Forward Mode) -->
+  <div class="section" id="compounds-section">
+    <div class="section-title">Mineral Compounds — Grams per Batch</div>
+    <div class="grid-3" id="compounds-grid"></div>
+  </div>
+
+  <!-- Target Inputs (Target Mode) -->
+  <div class="section" id="target-section" style="display:none;">
+    <div class="section-title">Target Profile (mg/L) — Label Parameters Shown in Gold</div>
+    <div class="grid-4" id="targets-grid"></div>
+    <div style="margin-top: 20px; display: flex; gap: 12px;">
+      <button class="btn" onclick="calcFromTarget()">Calculate Recipe</button>
+      <button class="btn btn-ghost" onclick="loadLabelDefaults()">Load Label Defaults</button>
+    </div>
+  </div>
+
+  <!-- Resulting Profile -->
+  <div class="section">
+    <div class="section-title">Resulting Mineral Profile</div>
+    <div id="profile-list"></div>
+    <div class="tds-box">
+      <div class="tds-item"><div class="tds-val" id="tds-val">—</div><div class="tds-key">TDS mg/L</div></div>
+      <div class="tds-item"><div class="tds-val" id="ph-val">7.2</div><div class="tds-key">pH (target)</div></div>
+      <div class="tds-item"><div class="tds-val" id="hardness-val">—</div><div class="tds-key">Hardness mg/L CaCO₃</div></div>
+    </div>
+  </div>
+
+  <!-- Recipe Card -->
+  <div class="section" id="recipe-section">
+    <div class="section-title">Recipe Card</div>
+    <div class="recipe-card" id="recipe-card-content"></div>
+    <div style="margin-top: 20px;">
+      <button class="btn btn-ghost" onclick="copyRecipe()">Copy Recipe</button>
+    </div>
+  </div>
+
+  <!-- Famous Water Comparison -->
+  <div class="section">
+    <div class="section-title">Compare to Famous Springs</div>
+    <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+      <select id="ref1" onchange="drawChart()" style="width: auto; flex: 1; min-width: 140px;"><option value="Evian">Evian</option><option value="Volvic">Volvic</option><option value="Fiji">Fiji</option><option value="Acqua Panna">Acqua Panna</option><option value="Gerolsteiner">Gerolsteiner</option><option value="San Pellegrino">San Pellegrino</option></select>
+      <select id="ref2" onchange="drawChart()" style="width: auto; flex: 1; min-width: 140px;"><option value="Volvic">Volvic</option><option value="Evian">Evian</option><option value="Fiji">Fiji</option><option value="Acqua Panna">Acqua Panna</option><option value="Gerolsteiner">Gerolsteiner</option><option value="San Pellegrino">San Pellegrino</option></select>
+    </div>
+    <div class="chart-wrap"><canvas id="compChart"></canvas></div>
+  </div>
+</div>
+
+<script>
+// ─── Compound definitions ─────────────────────────────────────────────────
+const COMPOUNDS = [
+  { id: 'cacl2', name: 'Calcium Chloride', formula: 'CaCl₂·2H₂O', mw: 147.01,
+    ions: { ca: 0.2727, cl: 0.4823 }, default: 0 },
+  { id: 'caso4', name: 'Calcium Sulfate (Gypsum)', formula: 'CaSO₄·2H₂O', mw: 172.17,
+    ions: { ca: 0.2328, so4: 0.5576 }, default: 0 },
+  { id: 'mgso4', name: 'Magnesium Sulfate (Epsom)', formula: 'MgSO₄·7H₂O', mw: 246.47,
+    ions: { mg: 0.0986, so4: 0.3893 }, default: 0 },
+  { id: 'mgcl2', name: 'Magnesium Chloride', formula: 'MgCl₂·6H₂O', mw: 203.30,
+    ions: { mg: 0.1196, cl: 0.3489 }, default: 0 },
+  { id: 'nahco3', name: 'Sodium Bicarbonate', formula: 'NaHCO₃', mw: 84.01,
+    ions: { na: 0.2737, hco3: 0.7263 }, default: 0 },
+  { id: 'khco3', name: 'Potassium Bicarbonate', formula: 'KHCO₃', mw: 100.12,
+    ions: { k: 0.3905, hco3: 0.6094 }, default: 0 },
+  { id: 'kcl', name: 'Potassium Chloride', formula: 'KCl', mw: 74.55,
+    ions: { k: 0.5245, cl: 0.4755 }, default: 0 },
+  { id: 'nacl', name: 'Sodium Chloride', formula: 'NaCl', mw: 58.44,
+    ions: { na: 0.3934, cl: 0.6066 }, default: 0 },
+  { id: 'sio2', name: 'Silica (food grade)', formula: 'SiO₂', mw: 60.09,
+    ions: { sio2: 1.0 }, default: 0 },
+  { id: 'k2so4', name: 'Potassium Sulfate', formula: 'K₂SO₄', mw: 174.26,
+    ions: { k: 0.4487, so4: 0.5513 }, default: 0 },
+];
+
+const ION_META = {
+  ca:   { name: 'Calcium', label: 'Ca²⁺', unit: 'mg/L', isLabel: true,  max: 120, target: 42  },
+  mg:   { name: 'Magnesium', label: 'Mg²⁺', unit: 'mg/L', isLabel: true, max: 60, target: 18  },
+  sio2: { name: 'Silica', label: 'SiO₂', unit: 'mg/L', isLabel: true,   max: 100, target: 38  },
+  hco3: { name: 'Bicarbonate', label: 'HCO₃⁻', unit: 'mg/L', isLabel: true, max: 300, target: 145 },
+  na:   { name: 'Sodium', label: 'Na⁺', unit: 'mg/L', isLabel: true,   max: 50,  target: 12  },
+  k:    { name: 'Potassium', label: 'K⁺', unit: 'mg/L', isLabel: false,  max: 20,  target: 8   },
+  so4:  { name: 'Sulfate', label: 'SO₄²⁻', unit: 'mg/L', isLabel: false, max: 50,  target: 10  },
+  cl:   { name: 'Chloride', label: 'Cl⁻', unit: 'mg/L', isLabel: false,  max: 30,  target: 7   },
+};
+
+const REFS = {
+  "Evian":        { ca: 80,   mg: 26,   na: 6.5,  k: 1,   hco3: 360,  so4: 12.6, cl: 6.8,  sio2: 13.5 },
+  "Volvic":       { ca: 11.5, mg: 8,    na: 11.6, k: 6.2, hco3: 74,   so4: 8.1,  cl: 13.5, sio2: 31.7 },
+  "Fiji":         { ca: 17,   mg: 15,   na: 18,   k: 5,   hco3: 140,  so4: 0,    cl: 9.7,  sio2: 85   },
+  "Acqua Panna":  { ca: 30.4, mg: 6.6,  na: 6.3,  k: 1,   hco3: 107,  so4: 22.4, cl: 5.7,  sio2: 9.9  },
+  "Gerolsteiner": { ca: 348,  mg: 108,  na: 118,  k: 11,  hco3: 1816, so4: 38,   cl: 40,   sio2: 20   },
+  "San Pellegrino":{ ca: 174, mg: 53.6, na: 43.6, k: 3,   hco3: 243,  so4: 431,  cl: 74.3, sio2: 7.4  },
+};
+
+let mode = 'forward';
+let compChart = null;
+const ionOrder = ['ca','mg','sio2','hco3','na','k','so4','cl'];
+
+// ─── Init ──────────────────────────────────────────────────────────────────
+function init() {
+  // Build compound inputs
+  const grid = document.getElementById('compounds-grid');
+  COMPOUNDS.forEach(c => {
+    const ionLabels = Object.keys(c.ions).map(k => `${ION_META[k].label}: ${(c.ions[k]*100).toFixed(1)}%`).join(', ');
+    grid.innerHTML += `
+      <div class="compound-card">
+        <div class="compound-name">${c.name}</div>
+        <div class="compound-formula">${c.formula}</div>
+        <label>Grams per batch</label>
+        <input type="number" id="g_${c.id}" value="${c.default}" min="0" step="0.1" oninput="calcForward()">
+        <div class="compound-ions">${ionLabels}</div>
+      </div>`;
+  });
+
+  // Build target inputs
+  const tgrid = document.getElementById('targets-grid');
+  ionOrder.forEach(ion => {
+    const m = ION_META[ion];
+    tgrid.innerHTML += `
+      <div>
+        <label style="${m.isLabel ? 'color:#c9a96e' : ''}">${m.name} (${m.label}) ${m.isLabel ? '★' : ''}</label>
+        <input type="number" id="t_${ion}" value="${m.target}" min="0" step="0.1">
+        <div style="font-size:10px; color:#444; margin-top:4px;">mg/L</div>
+      </div>`;
+  });
+
+  loadLabelDefaults();
+  calcFromTarget();
+  setMode('target');
+}
+
+function updateBatch() {
+  const gal = parseFloat(document.getElementById('batchGal').value) || 250;
+  document.getElementById('batchL').textContent = `= ${(gal * 3.78541).toFixed(0)} L`;
+  if (mode === 'forward') calcForward(); else calcFromTarget();
+}
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('compounds-section').style.display = m === 'forward' ? '' : 'none';
+  document.getElementById('target-section').style.display = m === 'target' ? '' : 'none';
+  document.getElementById('btn-forward').classList.toggle('active', m === 'forward');
+  document.getElementById('btn-target').classList.toggle('active', m === 'target');
+  if (m === 'forward') calcForward(); else calcFromTarget();
+}
+
+function getBatchLiters() {
+  return (parseFloat(document.getElementById('batchGal').value) || 250) * 3.78541;
+}
+
+// ─── Forward: grams → mg/L ────────────────────────────────────────────────
+function calcForward() {
+  const liters = getBatchLiters();
+  const profile = {};
+  ionOrder.forEach(k => profile[k] = 0);
+
+  COMPOUNDS.forEach(c => {
+    const grams = parseFloat(document.getElementById('g_' + c.id).value) || 0;
+    const mg = grams * 1000;
+    Object.entries(c.ions).forEach(([ion, frac]) => {
+      if (profile[ion] !== undefined) profile[ion] += (mg * frac) / liters;
+    });
+  });
+
+  renderProfile(profile);
+  renderRecipeCard(null);
+  drawChart(profile);
+}
+
+// ─── Target: mg/L → grams ─────────────────────────────────────────────────
+function calcFromTarget() {
+  const liters = getBatchLiters();
+  const targets = {};
+  ionOrder.forEach(ion => {
+    targets[ion] = parseFloat(document.getElementById('t_' + ion).value) || 0;
+  });
+
+  // Solve greedily: each compound adds specific ions
+  // Priority assignment: one primary compound per ion to avoid over-shooting
+  const grams = {};
+  COMPOUNDS.forEach(c => grams[c.id] = 0);
+  const remaining = { ...targets };
+
+  // Assignment logic (simplified greedy):
+  // 1. sio2 → SiO₂
+  // 2. hco3 split: 70% from KHCO₃ (adds K too), 30% from NaHCO₃ (adds Na too)
+  // 3. Remaining K from KCl; remaining Na from NaCl
+  // 4. Ca from CaCl₂; Mg from MgSO₄; remaining SO4 from CaSO4
+
+  // Silica
+  if (remaining.sio2 > 0) {
+    const g = (remaining.sio2 * liters) / (1000 * 1.0);
+    grams['sio2'] = g;
+    remaining.sio2 = 0;
+  }
+
+  // Bicarbonate: use KHCO₃ to satisfy both K and HCO₃ simultaneously
+  if (remaining.k > 0 && remaining.hco3 > 0) {
+    // How much KHCO₃ needed for target K?
+    const gFromK = (remaining.k * liters) / (1000 * 0.3905);
+    // How much KHCO₃ needed for target HCO₃?
+    const gFromHco3 = (remaining.hco3 * liters) / (1000 * 0.6094);
+    const gKhco3 = Math.min(gFromK, gFromHco3);
+    grams['khco3'] = gKhco3;
+    remaining.k = Math.max(0, remaining.k - gKhco3 * 0.3905 * 1000 / liters);
+    remaining.hco3 = Math.max(0, remaining.hco3 - gKhco3 * 0.6094 * 1000 / liters);
+  }
+
+  // Remaining K from KCl
+  if (remaining.k > 0) {
+    const g = (remaining.k * liters) / (1000 * 0.5245);
+    grams['kcl'] = g;
+    remaining.k = 0;
+    remaining.cl = Math.max(0, remaining.cl - g * 0.4755 * 1000 / liters);
+  }
+
+  // Remaining HCO₃ from NaHCO₃
+  if (remaining.hco3 > 0) {
+    const g = (remaining.hco3 * liters) / (1000 * 0.7263);
+    grams['nahco3'] = g;
+    remaining.hco3 = 0;
+    remaining.na = Math.max(0, remaining.na - g * 0.2737 * 1000 / liters);
+  }
+
+  // Remaining Na from NaCl
+  if (remaining.na > 0) {
+    const g = (remaining.na * liters) / (1000 * 0.3934);
+    grams['nacl'] = g;
+    remaining.na = 0;
+    remaining.cl = Math.max(0, remaining.cl - g * 0.6066 * 1000 / liters);
+  }
+
+  // Ca from CaCl₂ (also adds Cl)
+  if (remaining.ca > 0) {
+    const g = (remaining.ca * liters) / (1000 * 0.2727);
+    grams['cacl2'] = g;
+    remaining.ca = 0;
+    remaining.cl = Math.max(0, remaining.cl - g * 0.4823 * 1000 / liters);
+  }
+
+  // Mg from MgSO₄ (also adds SO4)
+  if (remaining.mg > 0) {
+    const g = (remaining.mg * liters) / (1000 * 0.0986);
+    grams['mgso4'] = g;
+    remaining.mg = 0;
+    remaining.so4 = Math.max(0, remaining.so4 - g * 0.3893 * 1000 / liters);
+  }
+
+  // Set compound inputs
+  COMPOUNDS.forEach(c => {
+    const el = document.getElementById('g_' + c.id);
+    if (el) el.value = (grams[c.id] || 0).toFixed(2);
+  });
+
+  // Calculate resulting profile from computed grams
+  const profile = {};
+  ionOrder.forEach(k => profile[k] = 0);
+  COMPOUNDS.forEach(c => {
+    const g = grams[c.id] || 0;
+    const mg = g * 1000;
+    Object.entries(c.ions).forEach(([ion, frac]) => {
+      if (profile[ion] !== undefined) profile[ion] += (mg * frac) / liters;
+    });
+  });
+
+  renderProfile(profile, targets);
+  renderRecipeCard(grams);
+  drawChart(profile);
+}
+
+function loadLabelDefaults() {
+  Object.entries(ION_META).forEach(([ion, m]) => {
+    const el = document.getElementById('t_' + ion);
+    if (el) el.value = m.target;
+  });
+}
+
+// ─── Render profile bars ──────────────────────────────────────────────────
+function renderProfile(profile, targets) {
+  const list = document.getElementById('profile-list');
+  const tds = calcTDS(profile);
+  const hardness = ((profile.ca / 20.04) + (profile.mg / 12.15)) * 50.04;
+
+  list.innerHTML = ionOrder.map(ion => {
+    const m = ION_META[ion];
+    const val = profile[ion] || 0;
+    const pct = Math.min(100, (val / m.max) * 100);
+    let cls = '';
+    let diffTag = '';
+    if (targets) {
+      const t = targets[ion] || m.target;
+      const diff = val - t;
+      if (Math.abs(diff) < 0.5) cls = 'match';
+      else if (diff > 0) cls = 'over';
+      const diffStr = diff >= 0 ? `+${diff.toFixed(1)}` : diff.toFixed(1);
+      const tagCls = Math.abs(diff) < 0.5 ? 'diff-zero' : (diff > 0 ? 'diff-over' : 'diff-good');
+      diffTag = `<span class="diff-tag ${tagCls}">${diffStr}</span>`;
+    }
+    return `
+      <div class="profile-row">
+        <div class="profile-ion">${m.name} <span style="color:#555;font-size:11px;">${m.label}</span>${m.isLabel ? '<span class="label-tag">LABEL</span>' : ''}${diffTag}</div>
+        <div class="profile-val ${cls}">${val.toFixed(1)}</div>
+        <div class="profile-bar-wrap"><div class="profile-bar" style="width:${pct}%"></div></div>
+        <div class="profile-unit">mg/L</div>
+      </div>`;
+  }).join('');
+
+  document.getElementById('tds-val').textContent = tds.toFixed(0);
+  document.getElementById('hardness-val').textContent = hardness.toFixed(0);
+}
+
+function calcTDS(p) {
+  return (p.ca||0) + (p.mg||0) + (p.na||0) + (p.k||0) + (p.hco3||0)*0.49 + (p.so4||0)*0.5 + (p.cl||0) + (p.sio2||0);
+}
+
+// ─── Recipe card ──────────────────────────────────────────────────────────
+function renderRecipeCard(grams) {
+  const liters = getBatchLiters();
+  const gal = parseFloat(document.getElementById('batchGal').value) || 250;
+  const card = document.getElementById('recipe-card-content');
+
+  if (!grams) {
+    // Forward mode - read from inputs
+    grams = {};
+    COMPOUNDS.forEach(c => grams[c.id] = parseFloat(document.getElementById('g_' + c.id).value) || 0);
+  }
+
+  const rows = COMPOUNDS
+    .filter(c => (grams[c.id] || 0) > 0.01)
+    .map(c => {
+      const g = grams[c.id];
+      const oz = g * 0.035274;
+      const tsp = g / 6;
+      return `<div class="recipe-row">
+        <span class="recipe-compound">${c.name} <span style="font-size:11px;color:#444;">(${c.formula})</span></span>
+        <span class="recipe-amount">${g.toFixed(2)} g <span class="recipe-grams">/ ${oz.toFixed(2)} oz</span></span>
+      </div>`;
+    }).join('');
+
+  card.innerHTML = `
+    <div style="font-size:11px; color:#555; margin-bottom:16px; letter-spacing:0.1em;">
+      For ${gal} gallons (${liters.toFixed(0)} L) — starting from RO/filtered water
+    </div>
+    ${rows || '<div style="color:#444; font-style:italic;">No compounds added</div>'}`;
+}
+
+function copyRecipe() {
+  const text = document.getElementById('recipe-card-content').innerText;
+  navigator.clipboard.writeText(text).then(() => alert('Recipe copied!'));
+}
+
+// ─── Chart ────────────────────────────────────────────────────────────────
+function drawChart(profile) {
+  if (!profile) {
+    profile = {};
+    ionOrder.forEach(ion => profile[ion] = 0);
+    COMPOUNDS.forEach(c => {
+      const g = parseFloat(document.getElementById('g_' + c.id)?.value) || 0;
+      const liters = getBatchLiters();
+      Object.entries(c.ions).forEach(([ion, frac]) => {
+        if (profile[ion] !== undefined) profile[ion] += (g * 1000 * frac) / liters;
+      });
+    });
+  }
+
+  const labels = ionOrder.map(k => ION_META[k].label);
+  const r1key = document.getElementById('ref1').value;
+  const r2key = document.getElementById('ref2').value;
+  const r1 = REFS[r1key];
+  const r2 = REFS[r2key];
+
+  const pairData = ionOrder.map(k => profile[k] || 0);
+  const r1Data   = ionOrder.map(k => r1[k] || 0);
+  const r2Data   = ionOrder.map(k => r2[k] || 0);
+
+  const maxVals  = ionOrder.map((k,i) => Math.max(pairData[i], r1Data[i], r2Data[i], ION_META[k].target));
+
+  // Normalize to % of max for each ion
+  const norm = data => data.map((v, i) => maxVals[i] > 0 ? (v / maxVals[i]) * 100 : 0);
+
+  const ctx = document.getElementById('compChart').getContext('2d');
+  if (compChart) compChart.destroy();
+
+  compChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [
+        { label: 'PAIR Water', data: norm(pairData), backgroundColor: 'rgba(201,169,110,0.7)', borderColor: '#c9a96e', borderWidth: 1 },
+        { label: r1key, data: norm(r1Data), backgroundColor: 'rgba(100,160,200,0.4)', borderColor: 'rgba(100,160,200,0.6)', borderWidth: 1 },
+        { label: r2key, data: norm(r2Data), backgroundColor: 'rgba(180,120,160,0.3)', borderColor: 'rgba(180,120,160,0.5)', borderWidth: 1 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#888', font: { size: 11 } } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const idx = ctx.dataIndex;
+              const ion = ionOrder[idx];
+              const datasets = [pairData, r1Data, r2Data];
+              const val = datasets[ctx.datasetIndex][idx];
+              return `${ctx.dataset.label}: ${val.toFixed(1)} mg/L`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#888' }, grid: { color: '#1a1a1a' } },
+        y: { ticks: { color: '#555', callback: v => v + '%' }, grid: { color: '#1a1a1a' }, title: { display: true, text: '% of range max', color: '#444' } }
+      }
+    }
+  });
+}
+
+init();
+</script>
+</body>
+</html>
